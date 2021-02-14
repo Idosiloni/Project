@@ -8,7 +8,7 @@
 #    Jan 22, 2021 06:37:53 PM +0200  platform: Windows NT
 
 import sys
-
+import sqlite3
 try:
     import Tkinter as tk
 except ImportError:
@@ -35,13 +35,27 @@ def init(top, gui, *args, **kwargs):
     ClearChecks()
 def btnConfirm_1click(p1):
     print('SignUp_support.btnConfirm_1click')
-    sys.stdout.flush()
-    print(w.EntUser.get())
-    print(w.EntPass.get())
-    if che50.get()=="1":
-        print("Student")
-    if che51.get()=="1":
-        print("Teacher")
+    run=False
+    conn = sqlite3.connect('DataBase1.db')
+    c=conn.cursor()
+    while(run==False):
+        sys.stdout.flush()
+        print(w.EntUser.get())
+        print(w.EntPass.get())
+        if che50.get()=="1":
+            print("Student")
+            keyword='Student'
+        if che51.get()=="1":
+            print("Teacher")
+            keyword='Teacher'
+        try:
+            c.execute("INSERT INTO Users(Username,Password,Job) VALUES (?, ?, ?)" ,(w.EntUser.get() ,w.EntPass.get() ,keyword))
+            run=True
+        except:
+            print("username already exist")
+    conn.commit()
+    c.close()
+    conn.close()
     destroy_window()
 def destroy_window():
     # Function which closes the window.

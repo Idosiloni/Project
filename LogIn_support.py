@@ -7,7 +7,7 @@
 #    Jan 22, 2021 06:34:37 PM +0200  platform: Windows NT
 
 import sys
-
+import sqlite3
 try:
     import Tkinter as tk
 except ImportError:
@@ -31,7 +31,17 @@ def btnConfirm_1click(p1):
     sys.stdout.flush()
     print(w.Entry1.get())
     print(w.Entry2.get())
-    destroy_window()
+    conn = sqlite3.connect('DataBase1.db')
+    data=w.Entry1.get()
+    data1=w.Entry2.get()
+    cursor = conn.execute("SELECT * from Users")
+    for row in cursor:
+        if row[0] == data:
+            username=True
+        if row[1] ==  data1:
+            password=True
+    if username and password:
+        destroy_window()
 def destroy_window():
     # Function which closes the window.
     global top_level

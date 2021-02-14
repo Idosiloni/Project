@@ -8,7 +8,7 @@
 #    Jan 22, 2021 06:05:26 PM +0200  platform: Windows NT
 
 import sys
-
+import sqlite3
 try:
     import Tkinter as tk
 except ImportError:
