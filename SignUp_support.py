@@ -38,25 +38,26 @@ def btnConfirm_1click(p1):
     run=False
     conn = sqlite3.connect('DataBase1.db')
     c=conn.cursor()
-    while(run==False):
-        sys.stdout.flush()
-        print(w.EntUser.get())
-        print(w.EntPass.get())
-        if che50.get()=="1":
-            print("Student")
-            keyword='Student'
-        if che51.get()=="1":
-            print("Teacher")
-            keyword='Teacher'
-        try:
-            c.execute("INSERT INTO Users(Username,Password,Job) VALUES (?, ?, ?)" ,(w.EntUser.get() ,w.EntPass.get() ,keyword))
-            run=True
-        except:
-            print("username already exist")
+    
+    sys.stdout.flush()
+    print(w.EntUser.get())
+    print(w.EntPass.get())
+    if che50.get()=="1":
+        print("Student")
+        keyword='Student'
+    if che51.get()=="1":
+        print("Teacher")
+        keyword='Teacher'
+    try:
+        c.execute("INSERT INTO Users(Username,Password,Job) VALUES (?, ?, ?)" ,(w.EntUser.get() ,w.EntPass.get() ,keyword))
+        destroy_window()
+    except:
+        print("username already exist")
+        w.EntUser.delete(0,len(w.EntUser.get())+1)
     conn.commit()
     c.close()
     conn.close()
-    destroy_window()
+    
 def destroy_window():
     # Function which closes the window.
     global top_level

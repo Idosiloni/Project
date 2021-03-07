@@ -27,6 +27,9 @@ def init(top, gui, *args, **kwargs):
     root = top
 
 def btnConfirm_1click(p1):
+    username=False
+    password=False
+    type1=''
     print('LogIn_support.btnConfirm_1click')
     sys.stdout.flush()
     print(w.Entry1.get())
@@ -38,10 +41,24 @@ def btnConfirm_1click(p1):
     for row in cursor:
         if row[0] == data:
             username=True
+            type1=row[2]
         if row[1] ==  data1:
             password=True
     if username and password:
-        destroy_window()
+        if type1=='Student':
+            print('im in')
+            import Student
+            Student.create_Student(root,'Hello',top_level)
+        if type1=='Teacher':
+            print('im in')
+            import Teacher
+            Teacher.create_Teacher_first(root,'Hello',top_level)
+    else:
+        w.Entry1.delete(0,len(w.Entry1.get())+1)
+        w.Entry2.delete(0,len(w.Entry2.get())+1)
+        
+    conn.commit()
+    conn.close()
 def destroy_window():
     # Function which closes the window.
     global top_level
