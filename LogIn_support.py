@@ -56,6 +56,7 @@ def btnConfirm_1click(p1):
     else:
         w.Entry1.delete(0,len(w.Entry1.get())+1)
         w.Entry2.delete(0,len(w.Entry2.get())+1)
+        print('wrong')
         
     conn.commit()
     conn.close()
