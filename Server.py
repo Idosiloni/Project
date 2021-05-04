@@ -3,125 +3,97 @@ from socket import *
 from threading import *
 from tkinter.scrolledtext import ScrolledText
 from time import sleep
-
+import sqlite3
 from queue import Queue
 flag = 1
 conn_q = Queue()
 gui_q  = Queue()
 
-def server_send(client_socket, client_address):
-    print ("server send start")
-    global flag
-    while flag == 1:
-        if conn_q.empty() == False:
-            data = conn_q.get()
-            print ("server_send: " + data)
-            print("3333",current_thread().name)
-            client_socket.sendall(data.encode('latin-1'))
-        sleep(0.05) #sleep a little before check the queue again
-
-def server_recv():
-    global flag
-    port = 8820
-    print ("server recv start")
-    server_socket = socket()
-    server_socket.bind(('0.0.0.0',8820))
-
-    server_socket.listen(1)
-
-    (client_socket, client_address) = server_socket.accept()
-    print ("client accept from {0} at port {1}".format(client_address, port))
-    client_socket.settimeout(3000)
-
-    flag = 1
-    sendThread = Thread(target=server_send, args=(client_socket, client_address))
-    sendThread.start()
-
-    while(1):
-        try:
-            client_info = client_socket.recv(1024)
-        except Exception as e:
-            flag = 0
-            sleep(0.2) #let the server_send thread to be close
-            print (e)
-            client_socket.close()
-            (client_socket, client_address) = server_socket.accept() #be ready for next client
-            client_socket.settimeout(3000)
-            print ("client accept from {0} at port {1}".format(client_address, port))
-            flag = 1
-            sendThread = Thread(target=server_send, args=(client_socket, client_address))
-            sendThread.start()
-            continue
-        # if the code will not check empty string,then once the client terminate,
-        # the server will continusly will get empty string
-        if client_info == "":
-            flag = 0
-            sleep(0.2) #let the server_send thread to be close
-            client_socket.close()
-            print ("client close the socket")
-            (client_socket, client_address) = server_socket.accept()
-            print ("client accept from {0} at port {1}".format(client_address, port))
-            client_socket.settimeout(3000)
-            flag = 1
-            sendThread = Thread(target=server_send, args=(client_socket, client_address))
-            sendThread.start()
-            continue
-        client_info_str = client_info.decode('latin-1')
-        print ("server_recv: " + client_info_str)
-        print("4444",current_thread().name)
-        gui_q.put(client_info_str)
-
-
+class handle_client(Thread):  
+    print("Hello")
+    clients =[] #class variable
+    lock = Lock()
     
-class App(Thread):
-  def __init__(self, master):
-  
-    commThread = Thread(target= server_recv, args=())
-    commThread.start()
-  
-   
-    Thread.__init__(self)
-    frame = Frame(master)
-    frame.pack()
-    self.gettext = ScrolledText(frame, height=10,width=100, state=NORMAL)
-    self.gettext.pack()
-    sframe = Frame(frame)
-    sframe.pack(anchor='w')
-    self.pro = Label(sframe, text="Server>>");
-    self.sendtext = Entry(sframe,width=80)
-    self.sendtext.focus_set()
-    self.sendtext.bind(sequence="<Return>", func=self.Send)
-    self.pro.pack(side=LEFT)
-    self.sendtext.pack(side=LEFT)
-    self.gettext.insert(END,'Welcome to Chat\n')
-    self.gettext.configure(state=DISABLED)
-  def Send(self, args):
-    print("2222",current_thread().name)
-    self.gettext.configure(state=NORMAL)
-    text = self.sendtext.get()
-    if text=="": text=" "
-    self.gettext.insert(END,'Me >> %s \n'%text)
-    self.sendtext.delete(0,END)
-    conn_q.put(text)
-    self.sendtext.focus_set()
-    self.gettext.configure(state=DISABLED)
-    self.gettext.see(END)
-  def run(self):
-    while 1:
-        if gui_q.empty() == False:
-            text = gui_q.get()     
-            print("1111",current_thread().name)
-            self.gettext.configure(state=NORMAL)
-            self.gettext.insert(END,'client >> %s\n'%text)
-            self.gettext.configure(state=DISABLED)
-            self.gettext.see(END)
-        sleep(0.05) #sleep a little before check the queue again
-        
-def main():        
-    root = Tk()
-    root.title('Server Chat')
-    app = App(root).start()
-    root.mainloop()
+    
+    conn = sqlite3.connect('DataBase1.db')
+    c=conn.cursor()
+    
+    
+    
+    def __init__(self, client_socket):
+        Thread.__init__(self)
+        self.client_socket = client_socket
+        self.login = "False"
+        self.user = None
+        handle_client.clients.append( client_socket )
 
+    def parse_client_message(self,client_message):
+        parts = client_message.split(",")
+        message_type = parts[0]
+        if message_type == "signUp":
+            try:
+                c.execute("INSERT INTO Users(Username,Password,Job) VALUES (?, ?, ?)" ,(parts[1] ,parts[2] ,parts[3]))
+                self.client_socket.send("Ok")
+            except:
+                self.client_socket.send("ERROR")
+     
+            data=self.buildMsgToClient(self.login,"Name","Server","Yosi")
+        
+        
+    def run(self):
+        stop = 1
+        while stop == 1:
+            try:
+                client_info = self.client_socket.recv(1024)
+                
+            except:
+                print ("client {} close forcibly the socket".format(self.user))
+                stop = 0 #stop the while. get out from thread
+                #print("111",users)
+                for i, o in enumerate(users): # set the user to logout (do not remove him from users list!!!)
+                    if o.user == self.user:
+                        o.login = "False" #del users[i]
+                        #print("222",users)
+                        break
+                
+                continue
+            #handle_client.broadcast(client_info)
+            client_info_str = client_info.decode('utf-8')
+            
+            if client_info_str == "":
+                self.client_socket.close()
+                print ("client close the socket")
+            print ("server got: " + client_info_str)
+            data = self.parse_client_message(client_info_str)
+            if data == "Send":
+                continue #we already send response to client from parse_client_message()
+            data = data.encode('utf-8') #convert the string to bytes
+            self.client_socket.send(data)
+
+        
+class Server():
+    def __init__(self, port):
+        
+    
+        self.server_socket = socket()
+        self.server_socket.bind(('0.0.0.0',8820))
+
+    def go(self):
+        self.server_socket.listen(5)
+        
+        while(1):
+            (client_socket, client_address) = self.server_socket.accept()
+            print("new client connect")
+            
+            stam = handle_client(client_socket)
+            stam.start()
+
+
+def main():
+    print("server start")
+    a = Server(8820)
+    a.go() 
+
+           
 if __name__ == "__main__":
     main()

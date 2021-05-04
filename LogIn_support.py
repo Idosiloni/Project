@@ -5,7 +5,7 @@
 #  in conjunction with Tcl version 8.6
 #    Jan 22, 2021 06:13:02 PM +0200  platform: Windows NT
 #    Jan 22, 2021 06:34:37 PM +0200  platform: Windows NT
-
+from socket import *
 import sys
 import sqlite3
 try:

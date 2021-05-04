@@ -6,7 +6,7 @@
 #    Jan 22, 2021 05:31:30 PM +0200  platform: Windows NT
 #    Jan 22, 2021 05:46:38 PM +0200  platform: Windows NT
 #    Jan 22, 2021 06:05:26 PM +0200  platform: Windows NT
-
+from socket import *
 import sys
 import sqlite3
 try:
@@ -26,7 +26,9 @@ def init(top, gui, *args, **kwargs):
     w = gui
     top_level = top
     root = top
-
+print("start client")
+my_socket = socket()
+my_socket.connect(("127.0.0.1",8820))
 def btnExit_1click(p1):
     print('Main_support.btnExit_1click')
     sys.stdout.flush()

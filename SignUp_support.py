@@ -6,9 +6,10 @@
 #    Jan 22, 2021 05:39:48 PM +0200  platform: Windows NT
 #    Jan 22, 2021 05:41:27 PM +0200  platform: Windows NT
 #    Jan 22, 2021 06:37:53 PM +0200  platform: Windows NT
-
+from socket import *
 import sys
 import sqlite3
+import Main_support
 try:
     import Tkinter as tk
 except ImportError:
@@ -33,11 +34,23 @@ def init(top, gui, *args, **kwargs):
     top_level = top
     root = top
     ClearChecks()
+    
+    
+from queue import Queue
+conn_q = Queue()
+def client_send():
+    while True:
+        if conn_q.empty() == False:
+            data = conn_q.get()
+            print ("client_send:" + data )
+            Main_support.my_socket.sendall(data.encode('latin-1'))
+        sleep(0.05) #sleep a little before check the queue again
+    
+    
 def btnConfirm_1click(p1):
     print('SignUp_support.btnConfirm_1click')
-    run=False
-    conn = sqlite3.connect('DataBase1.db')
-    c=conn.cursor()
+    #conn = sqlite3.connect('DataBase1.db')
+    #c=conn.cursor()
     
     sys.stdout.flush()
     print(w.EntUser.get())
@@ -48,15 +61,18 @@ def btnConfirm_1click(p1):
     if che51.get()=="1":
         print("Teacher")
         keyword='Teacher'
-    try:
-        c.execute("INSERT INTO Users(Username,Password,Job) VALUES (?, ?, ?)" ,(w.EntUser.get() ,w.EntPass.get() ,keyword))
-        destroy_window()
-    except:
-        print("username already exist")
-        w.EntUser.delete(0,len(w.EntUser.get())+1)
-    conn.commit()
-    c.close()
-    conn.close()
+        
+        src= "signUp,"+w.EntUser.get()+","+w.EntPass.get()+","+keyword
+        Main_support.my_socket.sendall(src.encode('latin-1'))
+        conn_q.put(src)
+        
+        #c.execute("INSERT INTO Users(Username,Password,Job) VALUES (?, ?, ?)" ,(w.EntUser.get() ,w.EntPass.get() ,keyword))
+        if Main_support.my_socket.recv()=="Ok":
+            destroy_window()
+        else:    
+            print("username already exist")
+            w.EntUser.delete(0,len(w.EntUser.get())+1)
+    
     
 def destroy_window():
     # Function which closes the window.
