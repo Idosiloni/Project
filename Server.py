@@ -10,14 +10,15 @@ conn_q = Queue()
 gui_q  = Queue()
 
 class handle_client(Thread):  
+    
     print("Hello")
     clients =[] #class variable
     lock = Lock()
     
-    
+    """
     conn = sqlite3.connect('DataBase1.db')
     c=conn.cursor()
-    
+    """
     
     
     def __init__(self, client_socket):
@@ -26,20 +27,32 @@ class handle_client(Thread):
         self.login = "False"
         self.user = None
         handle_client.clients.append( client_socket )
+        
+       
 
     def parse_client_message(self,client_message):
         parts = client_message.split(",")
         message_type = parts[0]
         if message_type == "signUp":
             try:
-                c.execute("INSERT INTO Users(Username,Password,Job) VALUES (?, ?, ?)" ,(parts[1] ,parts[2] ,parts[3]))
-                self.client_socket.send("Ok")
+                conn = sqlite3.connect('DataBase1.db')
+                c=conn.cursor()
+                print("trying to sql")
+                print(parts[1] ,parts[2] ,parts[3])
+                
+                sqlCmd = "INSERT INTO Users(Username,Password,Job) VALUES ('{}', '{}', '{}')".format(parts[1] ,parts[2] ,parts[3])
+                print(sqlCmd)
+                c.execute(sqlCmd)
+                print("3333")
+                c.commit()
+                print("1")
+                self.client_socket.send("Ok".encode())
             except:
-                self.client_socket.send("ERROR")
-     
-            data=self.buildMsgToClient(self.login,"Name","Server","Yosi")
+                self.client_socket.send("ERROR".encode())
+            
+            
         
-        
+            conn.close()
     def run(self):
         stop = 1
         while stop == 1:
@@ -67,8 +80,8 @@ class handle_client(Thread):
             data = self.parse_client_message(client_info_str)
             if data == "Send":
                 continue #we already send response to client from parse_client_message()
-            data = data.encode('utf-8') #convert the string to bytes
-            self.client_socket.send(data)
+            #data = data.encode('utf-8') #convert the string to bytes
+            #self.client_socket.send(data)
 
         
 class Server():
