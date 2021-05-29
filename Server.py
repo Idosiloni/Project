@@ -33,6 +33,7 @@ class handle_client(Thread):
     def parse_client_message(self,client_message):
         parts = client_message.split(",")
         message_type = parts[0]
+
         if message_type == "signUp":
             try:
                 conn = sqlite3.connect('DataBase1.db')
@@ -44,15 +45,56 @@ class handle_client(Thread):
                 print(sqlCmd)
                 c.execute(sqlCmd)
                 print("3333")
-                c.commit()
+                conn.commit()
                 print("1")
                 self.client_socket.send("Ok".encode())
             except:
                 self.client_socket.send("ERROR".encode())
-            
-            
-        
+
+
+        elif message_type =="LogIn":
+            conn = sqlite3.connect('DataBase1.db')
+            cursor = conn.execute("SELECT * from Users")
+
+            for row in cursor:
+                username = False
+                password=False
+                print(row[0]+''+row[1]+''+row[2])
+                if row[0] == parts[1]:
+                    username = True
+                if row[1] == parts[2]:
+                    password = True
+                if username and password:
+                    break
+            if username and password:
+                print(row[2])
+                self.client_socket.send(row[2].encode())
+            else:
+                self.client_socket.send("ERROR".encode())
+
             conn.close()
+        elif message_type == "schedule":
+            try:
+                conn = sqlite3.connect('DataBase1.db')
+                c = conn.cursor()
+                print("trying to sql")
+                print(parts[1], parts[2], parts[3])
+
+                sqlCmd = "INSERT INTO Schedule(Date,Time,ClassType,Content) VALUES ('{}', '{}', '{}' ,'{}')".format(parts[1], parts[2],
+                                                                                                     parts[3],parts[4])
+                print(sqlCmd)
+                c.execute(sqlCmd)
+                print("3333")
+                conn.commit()
+                print("1")
+                self.client_socket.send("Ok".encode())
+            except:
+                self.client_socket.send("ERROR".encode())
+        elif message_type == "Get":
+            conn = sqlite3.connect('DataBase1.db')
+            c = conn.cursor()
+
+
     def run(self):
         stop = 1
         while stop == 1:
@@ -62,12 +104,7 @@ class handle_client(Thread):
             except:
                 print ("client {} close forcibly the socket".format(self.user))
                 stop = 0 #stop the while. get out from thread
-                #print("111",users)
-                for i, o in enumerate(users): # set the user to logout (do not remove him from users list!!!)
-                    if o.user == self.user:
-                        o.login = "False" #del users[i]
-                        #print("222",users)
-                        break
+                #print("111",users
                 
                 continue
             #handle_client.broadcast(client_info)

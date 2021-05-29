@@ -10,6 +10,7 @@ from socket import *
 import sys
 import sqlite3
 import Main_support
+from time import sleep
 try:
 	import Tkinter as tk
 except ImportError:
@@ -60,13 +61,12 @@ def btnConfirm_1click(p1):
 		keyword='Student'
 	if che51.get()=="1":
 		print("Teacher")
-		
 		keyword='Teacher'
 		
 	src= "signUp,"+w.EntUser.get()+","+w.EntPass.get()+","+keyword
 	print(src)
 	Main_support.my_socket.sendall(src.encode('latin-1'))
-	conn_q.put(src)
+	#conn_q.put(src)
 		
 		#c.execute("INSERT INTO Users(Username,Password,Job) VALUES (?, ?, ?)" ,(w.EntUser.get() ,w.EntPass.get() ,keyword))
 	data=Main_support.my_socket.recv(1024).decode()
@@ -76,7 +76,7 @@ def btnConfirm_1click(p1):
 	else:	 
 		print("username already exist")
 		w.EntUser.delete(0,len(w.EntUser.get())+1)
-	
+		w.EntPass.delete(0,len(w.EntPass.get())+1)
 	
 def destroy_window():
 	# Function which closes the window.

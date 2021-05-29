@@ -41,6 +41,11 @@ def init(top, gui, *args, **kwargs):
     global LogIn       
     LogIn = args[1] 
     LogIn.withdraw()
+    conn_q.put("Get")
+
+
+
+
 def Exit_Click(p1):
     print('Student_support.Exit_Click')
     sys.stdout.flush()
@@ -50,6 +55,23 @@ def destroy_window():
     global top_level
     top_level.destroy()
     top_level = None
+
+
+class client_send(Thread):
+    def __init__(self, client_socket):
+        Thread.__init__(self)
+        self.my_socket = client_socket
+
+    def run(self):
+        while True:
+            if conn_q.empty() == False:
+                msg = conn_q.get()
+                msg = msg.encode()
+                self.my_socket.send(msg)
+            sleep(0.02)  # sleep 20 ms - let the cpu breath
+
+
+
 
 if __name__ == '__main__':
     import Student

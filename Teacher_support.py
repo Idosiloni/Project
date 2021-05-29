@@ -5,12 +5,12 @@
 #  in conjunction with Tcl version 8.6
 #    Mar 01, 2021 05:06:52 PM +0200  platform: Windows NT
 #    Mar 01, 2021 05:09:45 PM +0200  platform: Windows NT
-from threading import *
 import sys
-from socket import *
-from time import sleep
 from queue import Queue
-
+from threading import *
+from time import sleep
+from socket import *
+import Main_support
 conn_q = Queue()
 try:
     import Tkinter as tk
@@ -24,6 +24,22 @@ except ImportError:
     import tkinter.ttk as ttk
     py3 = True
 
+
+
+
+
+
+def client_send():
+    while True:
+        if conn_q.empty() == False:
+            data = conn_q.get()
+            print ("client_send:" + data )
+            print("3333",current_thread().name)
+            Main_support.my_socket.sendall(data.encode('latin-1'))
+        sleep(0.05) #sleep a little before check the queue again
+
+
+
 def init(top, gui, *args, **kwargs):
     global w, top_level, root
     w = gui
@@ -32,18 +48,22 @@ def init(top, gui, *args, **kwargs):
     global LogIn       
     LogIn = args[1] 
     LogIn.withdraw()
+    commThread = Thread(target=client_send, args=())
+    commThread.start()
+
 def Exit_Click(p1):
     print('Teacher_support.Exit_Click')
     sys.stdout.flush()
     destroy_window()
 def Send_Click(p1):
     print('Teacher_support.Send_Click')
-    #send_message()
+    send_message()
     sys.stdout.flush()
+
+
+
     
-    
-    
-def send_message(p1):
+def send_message():
     global w
     print('gui_chat_support.send_message')
     print("111")
@@ -51,32 +71,19 @@ def send_message(p1):
     time=w.Time.get()
     classType=w.ClassType.get()
     content=w.Content.get()
-    s=date+","+time+","+classType+","+content
+    s="schedule,"+date+","+time+","+classType+","+content
     #to = w.Scrolledtext1
     #to.insert(END,s)
     conn_q.put(s)
     #sys.stdout.flush()
- 
 
-def client_send(): 
-    while True:
-        if conn_q.empty() == False:
-            data = conn_q.get()
-            print ("client_send:" + data )
-            print("3333",current_thread().name)
-            my_socket.sendall(data.encode('latin-1'))
-        sleep(0.05) #sleep a little before check the queue again
-    
-    
-    
-    
-    
-    
+
 def destroy_window():
     # Function which closes the window.
     global top_level
     top_level.destroy()
     top_level = None
+
 
 if __name__ == '__main__':
     import Teacher

@@ -8,6 +8,7 @@
 from socket import *
 import sys
 import sqlite3
+import Main_support
 try:
     import Tkinter as tk
 except ImportError:
@@ -27,39 +28,35 @@ def init(top, gui, *args, **kwargs):
     root = top
 
 def btnConfirm_1click(p1):
-    username=False
-    password=False
-    type1=''
     print('LogIn_support.btnConfirm_1click')
     sys.stdout.flush()
     print(w.Entry1.get())
     print(w.Entry2.get())
-    conn = sqlite3.connect('DataBase1.db')
     data=w.Entry1.get()
     data1=w.Entry2.get()
-    cursor = conn.execute("SELECT * from Users")
-    for row in cursor:
-        if row[0] == data:
-            username=True
-            type1=row[2]
-        if row[1] ==  data1:
-            password=True
-    if username and password:
-        if type1=='Student':
+
+    src = "LogIn," + data + "," + data1
+    print(src)
+    Main_support.my_socket.sendall(src.encode('latin-1'))
+    #w.Entry1.delete(0,len(w.Entry1.get())+1)
+    #w.Entry2.delete(0,len(w.Entry2.get())+1)
+    #print('wrong')
+    data = Main_support.my_socket.recv(1024).decode()
+    print(data)
+    if data=="ERROR":
+        print("wrong")
+        w.Entry1.delete(0, len(data) + 1)
+    else:
+
+        if data == 'Student':
             print('im in')
             import Student
-            Student.create_Student(root,'Hello',top_level)
-        if type1=='Teacher':
+            Student.create_Student(root, 'Hello', top_level)
+        if data == 'Teacher':
             print('im in')
             import Teacher
-            Teacher.create_Teacher_first(root,'Hello',top_level)
-    else:
-        w.Entry1.delete(0,len(w.Entry1.get())+1)
-        w.Entry2.delete(0,len(w.Entry2.get())+1)
-        print('wrong')
-        
-    conn.commit()
-    conn.close()
+            Teacher.create_Teacher_first(root, 'Hello', top_level)
+
 def destroy_window():
     # Function which closes the window.
     global top_level
