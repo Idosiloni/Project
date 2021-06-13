@@ -227,7 +227,7 @@ class Teacher_first:
         self.Title.configure(background="#d9d9d9")
         self.Title.configure(disabledforeground="#a3a3a3")
         self.Title.configure(foreground="#000000")
-        self.Title.configure(text='''Label''')
+        self.Title.configure(text='''Teacher''')
 
 if __name__ == '__main__':
     vp_start_gui()

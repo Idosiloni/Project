@@ -21,17 +21,24 @@ except ImportError:
     import tkinter.ttk as ttk
     py3 = True
 
+
+
 def init(top, gui, *args, **kwargs):
     global w, top_level, root
     w = gui
     top_level = top
     root = top
+data=""
+data1=""
+
 
 def btnConfirm_1click(p1):
     print('LogIn_support.btnConfirm_1click')
     sys.stdout.flush()
     print(w.Entry1.get())
     print(w.Entry2.get())
+    global data
+    global data1
     data=w.Entry1.get()
     data1=w.Entry2.get()
 
@@ -41,21 +48,26 @@ def btnConfirm_1click(p1):
     #w.Entry1.delete(0,len(w.Entry1.get())+1)
     #w.Entry2.delete(0,len(w.Entry2.get())+1)
     #print('wrong')
-    data = Main_support.my_socket.recv(1024).decode()
-    print(data)
-    if data=="ERROR":
+    data2 = Main_support.my_socket.recv(1024).decode()
+    print(data2)
+    if data2=="ERROR":
         print("wrong")
         w.Entry1.delete(0, len(data) + 1)
     else:
 
-        if data == 'Student':
+        if data2 == 'Student':
             print('im in')
             import Student
             Student.create_Student(root, 'Hello', top_level)
-        if data == 'Teacher':
+        if data2 == 'Teacher':
             print('im in')
             import Teacher
             Teacher.create_Teacher_first(root, 'Hello', top_level)
+
+class User1:
+    def __init__(self):
+        self.Username = data
+        self.Password = data1
 
 def destroy_window():
     # Function which closes the window.

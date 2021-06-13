@@ -1,13 +1,14 @@
 from tkinter import *
-from socket import *
-from threading import *
+
 from tkinter.scrolledtext import ScrolledText
 from time import sleep
 import sqlite3
 from queue import Queue
+from socket import *
+from threading import *
+import datetime
 flag = 1
-conn_q = Queue()
-gui_q  = Queue()
+
 
 class handle_client(Thread):  
     
@@ -92,7 +93,20 @@ class handle_client(Thread):
                 self.client_socket.send("ERROR".encode())
         elif message_type == "Get":
             conn = sqlite3.connect('DataBase1.db')
-            c = conn.cursor()
+            cursor = conn.execute("SELECT * from Schedule")
+            str1 = ""
+            x = datetime.datetime.now()
+
+            for row in cursor:
+                if x.strftime("%x")==row[0]:
+                    str1 = str1 + '\n' + row[0] + ' ' + row[1] + ' ' + row[2] + ' ' + row[3]
+            self.client_socket.sendall(str1.encode())
+            conn.close()
+
+
+
+
+
 
 
     def run(self):

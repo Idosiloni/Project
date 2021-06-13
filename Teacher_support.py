@@ -7,10 +7,12 @@
 #    Mar 01, 2021 05:09:45 PM +0200  platform: Windows NT
 import sys
 from queue import Queue
+import datetime
 from threading import *
 from time import sleep
 from socket import *
 import Main_support
+import LogIn_support
 conn_q = Queue()
 try:
     import Tkinter as tk
@@ -23,6 +25,7 @@ try:
 except ImportError:
     import tkinter.ttk as ttk
     py3 = True
+
 
 
 
@@ -48,9 +51,13 @@ def init(top, gui, *args, **kwargs):
     global LogIn       
     LogIn = args[1] 
     LogIn.withdraw()
+    user = LogIn_support.User1()
+    w.UserDetails.insert(tk.END, user.Username)
+    x = datetime.datetime.now()
+    w.ClassDetails.insert(tk.END,x.strftime("%x"))
     commThread = Thread(target=client_send, args=())
     commThread.start()
-
+    
 def Exit_Click(p1):
     print('Teacher_support.Exit_Click')
     sys.stdout.flush()
