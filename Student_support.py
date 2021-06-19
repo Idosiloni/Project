@@ -51,7 +51,8 @@ def init(top, gui, *args, **kwargs):
     sendThead.start()
     recThead = Thread(target=client_rec, args=())
     recThead.start()
-
+    GetThead = Thread(target=send_Get, args=())
+    GetThead.start()
 
 def Exit_Click(p1):
     print('Student_support.Exit_Click')
@@ -79,10 +80,13 @@ def client_rec():
         data = Main_support.my_socket.recv(1024)
         data = data.decode('utf-8')
         print("server response: " + data)
+        w.Schedule.delete('1.0', tk.END)
         w.Schedule.insert(tk.END,data)
 
-
-
+def send_Get():
+    while(1):
+        conn_q.put("Get")
+        sleep(5)
 
 
 

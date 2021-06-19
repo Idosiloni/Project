@@ -98,8 +98,13 @@ class handle_client(Thread):
             x = datetime.datetime.now()
 
             for row in cursor:
-                if x.strftime("%x")==row[0]:
+                hour = row[1].split(':')
+                print(x.strftime("%x"))
+                print(x.strftime("%H"))
+                print(hour[0])
+                if x.strftime("%x")==row[0] and int(x.strftime("%H"))<int((int(hour[0])+1)):
                     str1 = str1 + '\n' + row[0] + ' ' + row[1] + ' ' + row[2] + ' ' + row[3]
+
             self.client_socket.sendall(str1.encode())
             conn.close()
 
@@ -129,10 +134,6 @@ class handle_client(Thread):
                 print ("client close the socket")
             print ("server got: " + client_info_str)
             data = self.parse_client_message(client_info_str)
-            if data == "Send":
-                continue #we already send response to client from parse_client_message()
-            #data = data.encode('utf-8') #convert the string to bytes
-            #self.client_socket.send(data)
 
         
 class Server():
